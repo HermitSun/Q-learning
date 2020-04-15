@@ -28,14 +28,14 @@ $$
 
 ```python
 def rl():
-    q_table = build_q_table()				# 建立Q表
-    for episode in range(MAX_EPISODES):		# 循环
+    q_table = build_q_table()               # 建立Q表
+    for episode in range(MAX_EPISODES):     # 循环
         while not terminated:
-            choose_best_action()			# 选择最优的操作
-            get_env_feedback()				# 获得环境反馈
-            calc_and_update_q_table()		# 使用公式进行计算，并且更新Q表
-            move_to_next_state()			# 转移到下一个状态
-        decrease_epsilon()					# 降低epsilon值
+            choose_best_action()            # 选择最优的操作
+            get_env_feedback()              # 获得环境反馈
+            calc_and_update_q_table()       # 使用公式进行计算，并且更新Q表
+            move_to_next_state()            # 转移到下一个状态
+        decrease_epsilon()                  # 降低epsilon值
 ```
 
 ### 2. 代码解释
@@ -45,24 +45,24 @@ def rl():
 ```python
 from enum import Enum
 
-ENV_SIZE = 6  							# 场景大小
-REACHABLE = 1  							# 距离多远即可获得奖励
-MAX_DISTANCE = ENV_SIZE - REACHABLE		# 智能体能达到的最远距离
+ENV_SIZE = 6                            # 场景大小
+REACHABLE = 1                           # 距离多远即可获得奖励
+MAX_DISTANCE = ENV_SIZE - REACHABLE     # 智能体能达到的最远距离
 
-EPSILON = 1								# greedy策略选择需要的参数epsilon
+EPSILON = 1                             # greedy策略选择需要的参数epsilon
 ALPHA = 0.1
 GAMMA = 0.9
-MAX_EPISODES = 13						# 最大循环次数
+MAX_EPISODES = 13                       # 最大循环次数
 
-FRESH_TIME = 0.3						# 控制台输出的刷新时间
+FRESH_TIME = 0.3                        # 控制台输出的刷新时间
 
 
-class Actions(Enum):					# 可选择的行为
+class Actions(Enum):                    # 可选择的行为
     LEFT = 'left',
     RIGHT = 'right'
 
 
-TERMINATED = -1							# 终止状态
+TERMINATED = -1                         # 终止状态
 ```
 
 其中，枚举类Actions纯属个人喜好。
@@ -129,30 +129,30 @@ def slider(episode: int, epsilon: float) -> float:
 
 ```python
 def rl(strategy: Callable[[int, float], float]) -> pd.DataFrame:
-    q_table = build_q_table(ENV_SIZE, Actions)									# 建立Q表
+    q_table = build_q_table(ENV_SIZE, Actions)                                  # 建立Q表
     epsilon = EPSILON
-    for episode in range(MAX_EPISODES):											# 循环
+    for episode in range(MAX_EPISODES):                                         # 循环
         step_counter = 0
         state = 0
         has_terminated = False
         update_env(state, episode, step_counter)
         while not has_terminated:
-            action = choose_best_action(state, Actions, q_table, epsilon)		# 选择最优的操作
-            new_state, reward = get_env_feedback(state, action)					# 获得环境反馈
+            action = choose_best_action(state, Actions, q_table, epsilon)       # 选择最优的操作
+            new_state, reward = get_env_feedback(state, action)                 # 获得环境反馈
 
             q_predict = q_table.loc[state, action]
             if new_state != TERMINATED:
                 q_target = reward + GAMMA * q_table.iloc[new_state, :].max()
-            else:
+            else:   
                 q_target = reward
                 has_terminated = True
-            q_table.loc[state, action] += ALPHA * (q_target - q_predict)		# 计算并更新Q表
+            q_table.loc[state, action] += ALPHA * (q_target - q_predict)        # 计算并更新Q表
 
             state = new_state
-            update_env(state, episode, step_counter + 1)						# 转移到下一个状态
+            update_env(state, episode, step_counter + 1)                        # 转移到下一个状态
             step_counter += 1
 
-        epsilon = strategy(episode, epsilon)									# 根据不同的策略更新epsilon
+        epsilon = strategy(episode, epsilon)                                    # 根据不同的策略更新epsilon
 
     return q_table
 
